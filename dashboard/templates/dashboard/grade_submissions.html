@@ -1,0 +1,40 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Grade Submission{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-3">Grade Submission</h2>
+
+  <div class="mb-3">
+    <strong>Assignment:</strong> {{ submission.assignment.title }}<br>
+    <strong>Student:</strong> {{ submission.student.user.get_full_name|default:submission.student.user.username }}<br>
+    <strong>Submitted on:</strong> {{ submission.submitted_at|date:"M d, Y H:i" }}
+  </div>
+
+  <div class="mb-3">
+    {% if submission.file %}
+      <a href="{{ submission.file.url }}" target="_blank" class="btn btn-outline-primary btn-sm">Download File</a>
+    {% elif submission.answer %}
+      <div class="border rounded p-2">{{ submission.answer|linebreaks }}</div>
+    {% else %}
+      <p class="text-muted">No file or written answer submitted.</p>
+    {% endif %}
+  </div>
+
+  <form method="post" class="card p-3 shadow-sm">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="id_grade" class="form-label">Grade</label>
+      <input type="text" name="grade" id="id_grade" class="form-control" value="{{ submission.grade|default_if_none:'' }}">
+    </div>
+    <div class="mb-3">
+      <label for="id_feedback" class="form-label">Feedback</label>
+      <textarea name="feedback" id="id_feedback" class="form-control" rows="4">{{ submission.feedback|default_if_none:'' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Save Grade</button>
+    <a href="{% url 'teacher_submissions' submission.assignment.id %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

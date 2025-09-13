@@ -14,7 +14,7 @@ def login_view(request):
         if user.role == 'admin':
             return redirect('dashboard:dashboard')  # Redirect to dashboard index
         elif user.role == 'teacher':
-            return redirect('teacher_home')
+            return redirect('teacher:teacher_dashboard')  # Fixed: redirect to teacher namespace
         elif user.role == 'student':
             return redirect('student_home')
     return render(request, 'accounts/login.html', {'form': form})
@@ -23,15 +23,14 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-
-
 @login_required
 def admin_home(request):
     return render(request, 'dashboard/admin_home.html')
 
 @login_required
 def teacher_home(request):
-    return render(request, 'accounts/teacher_home.html')
+    # Redirect to the teacher dashboard in the teacher namespace
+    return redirect('teacher:teacher_dashboard')
 
 @login_required
 def student_home(request):
@@ -46,5 +45,3 @@ def signup_view(request):
         form.save()
         return redirect('login')  # Redirect to login after signup
     return render(request, 'accounts/signup.html', {'form': form})
-
-

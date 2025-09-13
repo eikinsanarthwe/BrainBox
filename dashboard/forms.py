@@ -1,11 +1,10 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
-from .models import Teacher, Student, Course, Assignment
 
 User = get_user_model()
 
-# ---------------- Admin Creation ---------------- #
+# ---------------- Admin Creation Form ---------------- #
 
 class AdminCreationForm(UserCreationForm):
     email = forms.EmailField(
@@ -32,7 +31,7 @@ class AdminCreationForm(UserCreationForm):
             user.save()
         return user
 
-# ---------------- Admin Update ---------------- #
+# ---------------- Admin Update Form ---------------- #
 
 class AdminChangeForm(forms.ModelForm):
     new_password = forms.CharField(
@@ -64,7 +63,7 @@ class TeacherForm(forms.ModelForm):
     phone = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     class Meta:
-        model = Teacher
+        model = User  # Use string reference to avoid circular import
         fields = ['specialty', 'phone']
 
     def __init__(self, *args, **kwargs):
@@ -76,6 +75,9 @@ class TeacherForm(forms.ModelForm):
             self.fields['password'].required = True
 
     def save(self, commit=True):
+        # Import here to avoid circular import
+        from .models import Teacher
+        
         teacher = super().save(commit=False)
         username = self.cleaned_data['username']
         password = self.cleaned_data['password']
@@ -106,6 +108,8 @@ class StudentForm(forms.ModelForm):
     password = forms.CharField(required=False, widget=forms.PasswordInput(attrs={'class': 'form-control'}), help_text="Leave blank to generate a random password")
 
     class Meta:
+        # Use string reference to avoid circular import
+        from .models import Student
         model = Student
         fields = ['username', 'password', 'enrollment_id', 'course', 'semester']
         widgets = {
@@ -122,6 +126,9 @@ class StudentForm(forms.ModelForm):
         self.fields.pop('user', None)
 
     def save(self, commit=True):
+        # Import here to avoid circular import
+        from .models import Student
+        
         student = super().save(commit=False)
         username = self.cleaned_data['username']
         password = self.cleaned_data.get('password')
@@ -150,6 +157,8 @@ class StudentForm(forms.ModelForm):
 
 class CourseForm(forms.ModelForm):
     class Meta:
+        # Use string reference to avoid circular import
+        from .models import Course
         model = Course
         fields = ['code', 'name', 'description', 'teachers']
         widgets = {
@@ -161,12 +170,16 @@ class CourseForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Import here to avoid circular import
+        from .models import Teacher
         self.fields['teachers'].queryset = Teacher.objects.filter(user__role='teacher')
 
 # ---------------- Assignment Form ---------------- #
 
 class AssignmentForm(forms.ModelForm):
     class Meta:
+        # Use string reference to avoid circular import
+        from .models import Assignment
         model = Assignment
         fields = ['title', 'description', 'due_date', 'course', 'teacher', 'max_points']
         widgets = {
@@ -180,4 +193,6 @@ class AssignmentForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Import here to avoid circular import
+        from .models import Teacher
         self.fields['teacher'].queryset = Teacher.objects.filter(user__role='teacher')

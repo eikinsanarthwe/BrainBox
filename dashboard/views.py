@@ -2,8 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import logout, get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Teacher, Student, Assignment, Course
-from .forms import TeacherForm, StudentForm, CourseForm, AssignmentForm, AdminCreationForm, AdminChangeForm
 
 User = get_user_model()
 
@@ -25,6 +23,9 @@ def custom_logout(request):
 # -----------------------------
 @login_required
 def dashboard(request):
+    # Import here to avoid circular import
+    from .models import Teacher, Student, Course
+    
     context = {
         'teacher_count': Teacher.objects.count(),
         'student_count': Student.objects.count(),
@@ -43,6 +44,8 @@ def admin_list(request):
 
 @user_passes_test(is_admin)
 def create_admin_user(request):
+    from .forms import AdminCreationForm
+    
     if request.method == 'POST':
         form = AdminCreationForm(request.POST)
         if form.is_valid():
@@ -58,6 +61,8 @@ def create_admin_user(request):
 
 @user_passes_test(is_admin)
 def edit_admin(request, id):
+    from .forms import AdminChangeForm
+    
     admin = get_object_or_404(User, id=id, role='admin')
     if request.method == 'POST':
         form = AdminChangeForm(request.POST, instance=admin)
@@ -92,6 +97,8 @@ def delete_admin(request, id):
 # -----------------------------
 @login_required
 def teacher_list(request):
+    from .models import Teacher
+    
     teachers = Teacher.objects.select_related('user').all()
     return render(request, 'dashboard/teacher_list.html', {
         'teachers': teachers,
@@ -104,6 +111,9 @@ def teacher_create(request):
 
 @login_required
 def edit_teacher(request, id=None):
+    from .models import Teacher
+    from .forms import TeacherForm
+    
     teacher = get_object_or_404(Teacher, id=id) if id else None
     if request.method == 'POST':
         form = TeacherForm(request.POST, instance=teacher)
@@ -124,6 +134,8 @@ def edit_teacher(request, id=None):
 
 @login_required
 def delete_teacher(request, id):
+    from .models import Teacher
+    
     teacher = get_object_or_404(Teacher, id=id)
     if teacher.user:
         teacher.user.delete()
@@ -136,6 +148,8 @@ def delete_teacher(request, id):
 # -----------------------------
 @login_required
 def student_list(request):
+    from .models import Student
+    
     students = Student.objects.select_related('user').all()
     return render(request, 'dashboard/student_list.html', {'students': students})
 
@@ -145,6 +159,9 @@ def student_create(request):
 
 @user_passes_test(is_admin)
 def edit_student(request, id=None):
+    from .models import Student
+    from .forms import StudentForm
+    
     student = get_object_or_404(Student, id=id) if id else None
     if request.method == 'POST':
         form = StudentForm(request.POST, instance=student)
@@ -172,6 +189,8 @@ def edit_student(request, id=None):
 
 @user_passes_test(is_admin)
 def delete_student(request, id):
+    from .models import Student
+    
     student = get_object_or_404(Student, id=id)
     student.delete()
     messages.success(request, 'Student deleted successfully!')
@@ -182,6 +201,8 @@ def delete_student(request, id):
 # -----------------------------
 @login_required
 def course_list(request):
+    from .models import Course
+    
     courses = Course.objects.prefetch_related('teachers__user').all()
     return render(request, 'dashboard/course_list.html', {'courses': courses})
 
@@ -191,6 +212,9 @@ def course_create(request):
 
 @login_required
 def edit_course(request, id=None):
+    from .models import Course
+    from .forms import CourseForm
+    
     course = get_object_or_404(Course, id=id) if id else None
     if request.method == 'POST':
         form = CourseForm(request.POST, instance=course)
@@ -207,6 +231,8 @@ def edit_course(request, id=None):
 
 @login_required
 def delete_course(request, id):
+    from .models import Course
+    
     course = get_object_or_404(Course, id=id)
     course.delete()
     messages.success(request, 'Course deleted successfully!')
@@ -217,6 +243,8 @@ def delete_course(request, id):
 # -----------------------------
 @login_required
 def assignment_list(request):
+    from .models import Assignment
+    
     assignments = Assignment.objects.select_related('course', 'teacher').all()
     return render(request, 'dashboard/assignment_list.html', {'assignments': assignments})
 
@@ -226,6 +254,9 @@ def assignment_create(request):
 
 @login_required
 def edit_assignment(request, id=None):
+    from .models import Assignment
+    from .forms import AssignmentForm
+    
     assignment = get_object_or_404(Assignment, id=id) if id else None
     if request.method == 'POST':
         form = AssignmentForm(request.POST, instance=assignment)
@@ -242,6 +273,8 @@ def edit_assignment(request, id=None):
 
 @login_required
 def delete_assignment(request, id):
+    from .models import Assignment
+    
     assignment = get_object_or_404(Assignment, id=id)
     assignment.delete()
     messages.success(request, 'Assignment deleted successfully!')

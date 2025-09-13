@@ -1,1 +1,21 @@
-<p>Welcome {{ user.username }}! You are now logged in as {{ user.role }}</p>
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h4>Redirecting to Teacher Dashboard...</h4>
+        <p class="text-muted">If you are not redirected automatically, <a href="{% url 'teacher:teacher_dashboard' %}">click here</a>.</p>
+    </div>
+</div>
+
+<script>
+// Automatic redirect after 2 seconds
+setTimeout(function() {
+    window.location.href = "{% url 'teacher:teacher_dashboard' %}";
+}, 2000);
+</script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content">
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h2 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-check-circle me-2"></i>Grade Submission
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Student Information</h5>
+                    <p><strong>Name:</strong> {{ submission.student.user.get_full_name }}</p>
+                    <p><strong>Submitted:</strong> {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge {% if submission.is_late %}bg-danger{% else %}bg-success{% endif %}">
+                            {% if submission.is_late %}Late{% else %}On Time{% endif %}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Assignment Details</h5>
+                    <p><strong>Title:</strong> {{ submission.assignment.title }}</p>
+                    <p><strong>Course:</strong> {{ submission.assignment.course.name }}</p>
+                    <p><strong>Max Points:</strong> {{ max_points }}</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="grade" class="form-label">Grade (0-{{ max_points }})</label>
+                            <input type="number" class="form-control" id="grade" name="grade" 
+                                   min="0" max="{{ max_points }}" 
+                                   value="{% if submission.grade %}{{ submission.grade }}{% endif %}"
+                                   required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="feedback" class="form-label">Feedback</label>
+                    <textarea class="form-control" id="feedback" name="feedback" rows="4">{% if submission.feedback %}{{ submission.feedback }}{% endif %}</textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'teacher_submissions' submission.assignment.id %}" 
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Submissions
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Grade
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
